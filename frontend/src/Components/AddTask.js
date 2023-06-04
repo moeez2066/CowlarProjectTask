@@ -22,44 +22,47 @@ export default function AddTask() {
   const handleInputBlur = () => {
     setIsInputSelected(inputValue !== "");
   };
-
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (inputValue.trim() !== "") {
-        const task = {
-          task: inputValue,
-          completed: false,
-          creationTime: new Date().toISOString(),
-          completionTime: null,
-        };
-
-        updateUser({
-          variables: {
-            _id: JSON.parse(localStorage.getItem("userData")).email,
-            tasks: [task],
-          },
-          refetchQueries: [
-            {
-              query: GETALLTASKS,
-              variables: {
-                id: JSON.parse(localStorage.getItem("userData")).email,
-              },
+      handleAddTask();
+    }
+  };
+  const handleAddTask = () => {
+    if (inputValue.trim() !== "") {
+      const task = {
+        task: inputValue,
+        completed: false,
+        creationTime: new Date().toISOString(),
+        completionTime: null,
+      };
+  
+      updateUser({
+        variables: {
+          _id: JSON.parse(localStorage.getItem("userData")).email,
+          tasks: [task],
+        },
+        refetchQueries: [
+          {
+            query: GETALLTASKS,
+            variables: {
+              id: JSON.parse(localStorage.getItem("userData")).email,
             },
-          ],
+          },
+        ],
+      })
+        .then((response) => {
+          toast.success("Task Added ", {
+            autoClose: 800,
+          });
         })
-          .then((response) => {
-            toast.success("Task Added ", {
-              autoClose: 800,
-            });
-          })
-          .catch((error) => {});
-
-        setInputValue("");
-      }
+        .catch((error) => {});
+  
+      setInputValue("");
     }
   };
 
+  
   return (
     <section className="flex w-full absolute bottom-28 items-center justify-center">
       <div className="relative mt-4 w-60">
@@ -82,6 +85,7 @@ export default function AddTask() {
           onBlur={handleInputBlur}
           onKeyDown={handleKeyPress}
         />
+        <button onClick={handleAddTask} className="bg-yellow-500 p-2 mt-4 -mb-3 block m-auto text-black text-sm rounded-sm font-semibold">Add Task</button>
       </div>
     </section>
   );
