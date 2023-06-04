@@ -150,12 +150,12 @@ export default function Signup() {
               accept="image/*"
               onChange={handleImageChange}
               name="profile"
-              className="cursor-pointer"
+              className="cursor-pointer text-white"
             />
 
             {selectedImage && (
               <div className="flex items-center justify-center">
-                <div className="rounded-full overflow-hidden w-20 h-20 mt-2 -mb-4 border-4 border-yellow-500">
+                <div className="rounded-full overflow-hidden w-20 h-20 mt-4 -mb-4 border-4 border-yellow-500">
                   <img
                     className="object-cover w-full h-full"
                     src={selectedImage}
