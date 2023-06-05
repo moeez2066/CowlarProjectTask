@@ -25,13 +25,13 @@ To run this project on your PC or laptop, follow these steps:
 
 2. Start by running the backend server first.
    - Open the backend folder using Visual Studio Code (VS Code) .
-   - In the terminal, first run the command `npm install` to install required node modules and then run command `npm     start` to start the backend server.
+   - In the terminal, first run the command `npm install` to install required node modules and then run command `npm start` to start the backend server.
     This will initiate the server, allowing it to listen for incoming requests.
 
 
 3. Next, run the frontend application.
    - Open the frontend folder using VS Code .
-   - In the terminal, first run the command `npm install` to install required node modules and then run command `npm run  start`.
+   - In the terminal, first run the command `npm install` to install required node modules and then run command `npm run start`.
      This will launch the application in your default browser.
      You can now interact with all the frontend and backend functionalities of the website.
      
