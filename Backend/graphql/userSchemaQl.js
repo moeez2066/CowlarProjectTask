@@ -195,13 +195,8 @@ var mutation = new GraphQLObjectType({
             if (!user) {
               throw new Error("User not found");
             }
-
-            // Remove the task at the specified index
             user.tasks.splice(taskIndex, 1);
-
-            // Save the updated user
             const updatedUser = await user.save();
-
             return updatedUser;
           } catch (err) {
             throw new Error(err.message);

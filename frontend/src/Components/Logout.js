@@ -22,7 +22,7 @@ export default function Logout() {
 
       <div>
         <button
-          className="bg-yellow-500 p-2 mt-2 absolute top-0 right-4  text-black text-sm rounded-sm font-semibold"
+          className="bg-yellow-500  p-2 mt-2 absolute top-0 right-4  text-black text-sm rounded-sm font-semibold"
           onClick={handleLogout}
         >
           Logout

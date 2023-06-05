@@ -151,7 +151,7 @@ export default function TodoDD() {
         )}
       </div>
       {box && (
-        <div className="absolute leading-10 left-[65%] top-[12%] border-[1px] border-gray-200 bg-black rounded-lg p-3 pt-0 transition-all text-white">
+        <div className="absolute z-10 leading-10 left-[65%] top-[12%] border-[1px] border-gray-200 bg-black rounded-lg p-3 pt-0 transition-all text-white">
           <span
             onClick={() => setBox(false)}
             className="float-right hover:cursor-pointer p-0 m-0 leading-7 text-lg text-yellow-500 hover:text-red-500"
@@ -164,7 +164,7 @@ export default function TodoDD() {
           <hr className="w-60 my-4 text-black bg-black  border-gray-500 block m-auto " />
           <button
             onClick={() => removeusertask()}
-            className="bg-yellow-500 p-1 mt-2 text-black text-sm rounded-sm block m-auto"
+            className="bg-yellow-500  p-1 mt-2 text-black text-sm rounded-sm block m-auto"
           >
             Delete Task
           </button>
