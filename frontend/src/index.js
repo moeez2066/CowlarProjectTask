@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import reportWebVitals from "./reportWebVitals";
+
 import {
   ApolloClient,
   ApolloProvider,
@@ -13,6 +14,7 @@ import {
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 
+const config = require("./config");
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
   }
@@ -22,10 +24,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 const client = new ApolloClient({
-  link: ApolloLink.from([
-    errorLink,
-    new HttpLink({ uri: "http://localhost:3000/graphql " }),
-  ]),
+  link: ApolloLink.from([errorLink, new HttpLink({ uri: config.graphqlURI })]),
   cache: new InMemoryCache(),
 });
 

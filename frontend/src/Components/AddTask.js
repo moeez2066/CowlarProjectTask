@@ -1,64 +1,38 @@
 import React, { useState } from "react";
-import { useMutation } from "@apollo/client";
-import { GETALLTASKS } from "../GraphQl/Queries";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
+import Loader from "./Loader";
+import { useMutation } from "@apollo/client";
 import { UPDATEUSER } from "../GraphQl/Mutation";
+import { handleAddTask } from "../Services";
 
-export default function AddTask() {
+export default function AddTask(props) {
   const [inputValue, setInputValue] = useState("");
   const [isInputSelected, setIsInputSelected] = useState(false);
   const [updateUser] = useMutation(UPDATEUSER);
-
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
-
   const handleInputFocus = () => {
     setIsInputSelected(true);
   };
-
   const handleInputBlur = () => {
     setIsInputSelected(inputValue !== "");
   };
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleAddTask();
+      handleAddTask(
+        inputValue,
+        props.setLoad,
+        updateUser,
+        toast,
+        setInputValue
+      );
     }
   };
-  const handleAddTask = () => {
-    if (inputValue.trim() !== "") {
-      const task = {
-        task: inputValue,
-        completed: false,
-        creationTime: new Date().toISOString(),
-        completionTime: null,
-      };
-
-      updateUser({
-        variables: {
-          _id: JSON.parse(localStorage.getItem("userData")).email,
-          tasks: [task],
-        },
-        refetchQueries: [
-          {
-            query: GETALLTASKS,
-            variables: {
-              id: JSON.parse(localStorage.getItem("userData")).email,
-            },
-          },
-        ],
-      })
-        .then((response) => {
-          toast.success("Task Added ", {
-            autoClose: 800,
-          });
-        })
-        .catch((error) => {});
-
-      setInputValue("");
-    }
+  const handleAddTaskClick = () => {
+    handleAddTask(inputValue, props.setLoad, updateUser, toast, setInputValue);
   };
 
   return (
@@ -71,7 +45,7 @@ export default function AddTask() {
               : "top-2 text-base text-gray-500 font-semibold"
           }  pointer-events-none`}
         >
-          ADD TASK
+          ENTER TASK
         </label>
         <input
           className="w-full -z-10 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:border-indigo-500"
@@ -83,12 +57,16 @@ export default function AddTask() {
           onBlur={handleInputBlur}
           onKeyDown={handleKeyPress}
         />
-        <button
-          onClick={handleAddTask}
-          className="bg-yellow-500 p-2 mt-4 -mb-3 block m-auto text-black text-sm rounded-sm font-semibold"
-        >
-          Add Task
-        </button>
+        {!props.load ? (
+          <button
+            onClick={handleAddTaskClick}
+            className="bg-yellow-500 p-2 mt-4 -mb-3 block m-auto text-black text-sm rounded-sm font-semibold"
+          >
+            Add Task
+          </button>
+        ) : (
+          <Loader />
+        )}
       </div>
     </section>
   );

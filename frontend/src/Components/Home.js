@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Todo from "./TodoDD";
 import AddTask from "./AddTask";
 import Logout from "./Logout";
-export default function Home() {
+export default function Home(props) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -22,6 +22,7 @@ export default function Home() {
       }
     }
   }, [navigate, location.search]);
+
   return (
     <>
       <ToastContainer autoClose={800} />
@@ -40,8 +41,8 @@ export default function Home() {
             />
           </div>
         </div>
-        <Todo />
-        <AddTask />
+        <Todo load={props.load} setLoad={props.setLoad} />
+        <AddTask load={props.load} setLoad={props.setLoad} />
         <Logout />
       </section>
     </>

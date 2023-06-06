@@ -1,17 +1,19 @@
-var GraphQLSchema = require("graphql").GraphQLSchema;
-var GraphQLObjectType = require("graphql").GraphQLObjectType;
-var GraphQLList = require("graphql").GraphQLList;
-var GraphQLObjectType = require("graphql").GraphQLObjectType;
-var GraphQLNonNull = require("graphql").GraphQLNonNull;
-var GraphQLString = require("graphql").GraphQLString;
-var GraphQLInt = require("graphql").GraphQLInt;
-var USERModel = require("../models/userSchema");
-const { GraphQLBoolean } = require("graphql");
-const { GraphQLInputObjectType } = require("graphql");
-
+const {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLString,
+  GraphQLBoolean,
+  GraphQLInputObjectType,
+  GraphQLInt,
+} = require("graphql");
+const { User, Task } = require("../models/userSchema");
+const mongoose = require("mongoose");
 const taskType = new GraphQLObjectType({
   name: "Task",
   fields: () => ({
+    _id: { type: GraphQLString },
     task: { type: GraphQLString },
     completed: { type: GraphQLBoolean },
     creationTime: { type: GraphQLString },
@@ -34,176 +36,162 @@ const userType = new GraphQLObjectType({
   fields: () => ({
     _id: { type: GraphQLString },
     password: { type: GraphQLString },
-    tasks: { type: new GraphQLList(taskType) },
+    tasks: {
+      type: new GraphQLList(taskType),
+      resolve: (user) => Task.find({ _id: { $in: user.tasks } }),
+    },
   }),
 });
 
-// QUERIES
-
-var queryType = new GraphQLObjectType({
+const queryType = new GraphQLObjectType({
   name: "Query",
-  fields: function () {
-    return {
-      Allusers: {
-        type: new GraphQLList(userType),
-        resolve: function () {
-          const users = USERModel.find().exec();
-          if (!users) {
-            throw new Error("Error");
-          }
-          return users;
-        },
+  fields: () => ({
+    Allusers: {
+      type: new GraphQLList(userType),
+      resolve: () => User.find().exec(),
+    },
+    Oneuser: {
+      type: userType,
+      args: {
+        id: { type: GraphQLString },
+        password: { type: GraphQLString },
       },
-
-      Oneuser: {
-        type: userType,
-        args: {
-          id: {
-            name: "_id",
-            type: GraphQLString,
-          },
-          password: {
-            type: GraphQLString,
-          },
-        },
-        resolve: function (root, params) {
-          const userDetails = USERModel.findOne({
-            _id: params.id,
-            password: params.password,
-          }).exec();
-
-          if (!userDetails) {
-            throw new Error("Error");
-          }
-          return userDetails;
-        },
+      resolve: (_, { id, password }) =>
+        User.findOne({ _id: id, password }).exec(),
+    },
+    taskUser: {
+      type: userType,
+      args: {
+        id: { type: GraphQLString },
       },
-
-      taskUser: {
-        type: userType,
-        args: {
-          id: {
-            name: "_id",
-            type: GraphQLString,
-          },
-        },
-        resolve: function (root, params) {
-          const userDetails = USERModel.findOne({
-            _id: params.id,
-          }).exec();
-
-          if (!userDetails) {
-            throw new Error("Error");
-          }
-          return userDetails;
-        },
-      },
-    };
-  },
+      resolve: (_, { id }) => User.findOne({ _id: id }).exec(),
+    },
+  }),
 });
 
-// MUTATIONS
-
-var mutation = new GraphQLObjectType({
+const mutation = new GraphQLObjectType({
   name: "Mutation",
-  fields: function () {
-    return {
-      addUser: {
-        type: userType,
-        args: {
-          _id: {
-            type: new GraphQLNonNull(GraphQLString),
-          },
-          password: {
-            type: new GraphQLNonNull(GraphQLString),
-          },
-        },
-        resolve: async function (root, params) {
-          const usr = new USERModel(params);
-          try {
-            const newUsr = await usr.save();
-            return newUsr;
-          } catch (err) {
-            if (err.code === 11000) {
-              throw new Error("User already exists");
-            } else {
-              throw new Error("Error");
-            }
-          }
-        },
+  fields: () => ({
+    addUser: {
+      type: userType,
+      args: {
+        _id: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
       },
-      updateUser: {
-        type: userType,
-        args: {
-          _id: { type: new GraphQLNonNull(GraphQLString) },
-          tasks: { type: new GraphQLList(taskInputType) },
-        },
-        resolve: async function (root, { _id, tasks }) {
-          try {
-            const user = await USERModel.findById(_id);
-            if (!user) {
-              throw new Error("User not found");
-            }
-            const updatedTasks = tasks.map((taskInput) => ({
-              task: taskInput.task,
-              completed: taskInput.completed,
-              creationTime: taskInput.creationTime,
-              completionTime: taskInput.completionTime,
-            }));
-            user.tasks.push(...updatedTasks);
-            const updatedUser = await user.save();
+      resolve: async (_, { _id, password }) => {
+        const newUser = new User({ _id, password });
+        try {
+          const savedUser = await newUser.save();
+          return savedUser;
+        } catch (err) {
+          if (err.code === 11000) {
+            throw new Error("User already exists");
+          } else {
+            throw new Error("Error");
+          }
+        }
+      },
+    },
+    updateUser: {
+      type: userType,
+      args: {
+        _id: { type: new GraphQLNonNull(GraphQLString) },
+        task: { type: taskInputType },
+      },
+      resolve: async (_, { _id, task }) => {
+        try {
+          const user = await User.findById(_id);
+          if (!user) {
+            throw new Error("User not found");
+          }
 
-            return updatedUser;
-          } catch (err) {
-            throw new Error(err.message);
-          }
-        },
-      },
-      updateTaskCompletion: {
-        type: userType,
-        args: {
-          _id: { type: new GraphQLNonNull(GraphQLString) },
-          taskIndex: { type: new GraphQLNonNull(GraphQLInt) },
-          completionTime: { type: new GraphQLNonNull(GraphQLString) },
-        },
-        resolve: async function (root, { _id, taskIndex, completionTime }) {
-          try {
-            const user = await USERModel.findById(_id);
-            if (!user) {
-              throw new Error("User not found");
-            }
-            user.tasks[taskIndex].completed = true;
-            user.tasks[taskIndex].completionTime = completionTime;
-            const updatedUser = await user.save();
+          const newTask = new Task({
+            _id: new mongoose.Types.ObjectId(),
+            task: task.task,
+            completed: false,
+            creationTime:
+              new Date().toLocaleDateString() +
+              " " +
+              new Date().toLocaleTimeString(),
+            completionTime: task.completionTime,
+          });
 
-            return updatedUser;
-          } catch (err) {
-            throw new Error(err.message);
-          }
-        },
+          await newTask.save();
+          user.tasks.push(newTask._id);
+          await user.save();
+          const updatedUser = await User.findById(_id);
+          return updatedUser;
+        } catch (err) {
+          throw new Error(err.message);
+        }
       },
-      removeTask: {
-        type: userType,
-        args: {
-          _id: { type: new GraphQLNonNull(GraphQLString) },
-          taskIndex: { type: new GraphQLNonNull(GraphQLInt) },
-        },
-        resolve: async function (root, { _id, taskIndex }) {
-          try {
-            const user = await USERModel.findById(_id);
+    },
+    updateTaskCompletion: {
+      type: userType,
+      args: {
+        userId: { type: new GraphQLNonNull(GraphQLString) },
+        taskId: { type: new GraphQLNonNull(GraphQLInt) },
+      },
+      resolve: async (_, { userId, taskId }) => {
+        try {
+          const user = await User.findById(userId);
+          if (!user) {
+            throw new Error("User not found");
+          }
+          if (taskId < 0 || taskId >= user.tasks.length) {
+            throw new Error("Invalid task index");
+          }
+          const taskToUpdateId = user.tasks[taskId];
+          if (!taskToUpdateId) {
+            throw new Error("Task not found");
+          }
+          const updatedTask = await Task.findByIdAndUpdate(
+            taskToUpdateId,
+            {
+              completed: true,
+              completionTime:
+                new Date().toLocaleDateString() +
+                " " +
+                new Date().toLocaleTimeString(),
+            },
+            { new: true }
+          );
+          user.tasks[taskId] = updatedTask._id;
+          const updatedUser = await user.save();
 
-            if (!user) {
-              throw new Error("User not found");
-            }
-            user.tasks.splice(taskIndex, 1);
-            const updatedUser = await user.save();
-            return updatedUser;
-          } catch (err) {
-            throw new Error(err.message);
-          }
-        },
+          return updatedUser;
+        } catch (err) {
+          throw new Error(err.message);
+        }
       },
-    };
-  },
+    },
+
+    removeTask: {
+      type: userType,
+      args: {
+        userId: { type: new GraphQLNonNull(GraphQLString) },
+        taskId: { type: new GraphQLNonNull(GraphQLInt) },
+      },
+      resolve: async (_, { userId, taskId }) => {
+        try {
+          const user = await User.findById(userId);
+          if (!user) {
+            throw new Error("User not found");
+          }
+          if (taskId < 0 || taskId >= user.tasks.length) {
+            throw new Error("Invalid task index");
+          }
+          const taskToRemoveId = user.tasks[taskId];
+          user.tasks.splice(taskId, 1);
+          const updatedUser = await user.save();
+          await Task.findByIdAndDelete(taskToRemoveId);
+          return updatedUser;
+        } catch (err) {
+          throw new Error(err.message);
+        }
+      },
+    },
+  }),
 });
+
 module.exports = new GraphQLSchema({ query: queryType, mutation: mutation });

@@ -5,6 +5,7 @@ import { LOADONEUSER } from "../GraphQl/Queries";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+
 export default function Signin() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({

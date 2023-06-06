@@ -8,6 +8,8 @@ var app = express();
 var { graphqlHTTP } = require("express-graphql");
 var schema = require("./graphql/userSchemaQl");
 var cors = require("cors");
+var config = require("./config");
+require("dotenv").config();
 app.use("*", cors());
 app.use(
   "/graphql",
@@ -18,8 +20,6 @@ app.use(
     graphiql: true,
   })
 );
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -29,18 +29,24 @@ app.use("/", indexRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });
+app.use(function (req, res, next) {
+  next(createError(404));
+});
 app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
-  res.status(err.status || 500);
-  res.render("error");
+  res.status(err.status || 500).json({
+    error: err.message,
+  });
 });
 
 var mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 mongoose.Promise = require("bluebird");
+mongoose;
 mongoose
-  .connect("mongodb://0.0.0.0:27017/node-graphql", { useNewUrlParser: true })
-  .then(() => console.log("connection successful"))
+  .connect(config.mongodbURL, { useNewUrlParser: true })
+  .then(() => console.log("Connection successful"))
   .catch((err) => console.error(err));
+
 module.exports = app;

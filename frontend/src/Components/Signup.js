@@ -5,75 +5,27 @@ import { ADDUSER } from "../GraphQl/Mutation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-export default function Signup() {
+import Loader from "./Loader";
+import { handle_image_change, _ADD_ } from "../Services";
+export default function Signup(props) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
     _id: "",
     password: "",
   });
   const [selectedImage, setSelectedImage] = useState(null);
-
-  const Add = (event) => {
-    event.preventDefault();
-    setUserData({
-      _id: event.target.email.value,
-      password: event.target.password.value,
-    });
-    setTimeout(() => {
-      Adduser().catch((error) => {
-        if (error.message === "User already exists") {
-          toast.error("Email Already Exists ");
-        }
-      });
-    }, 0);
-  };
-
   const [Adduser, { data }] = useMutation(ADDUSER, {
     variables: {
       _id: userData._id,
       password: userData.password,
     },
   });
+  const Add = (event) => {
+    _ADD_(event, props, toast, Adduser, setUserData);
+  };
 
   const handleImageChange = (event) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const image = new Image();
-        image.onload = () => {
-          const canvas = document.createElement("canvas");
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 600;
-          let width = image.width;
-          let height = image.height;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(image, 0, 0, width, height);
-          const resizedDataURL = canvas.toDataURL("image/jpeg", 0.8);
-          localStorage.setItem("imageData", resizedDataURL);
-          setSelectedImage(resizedDataURL);
-        };
-
-        image.src = reader.result;
-      };
-
-      reader.readAsDataURL(file);
-    }
+    handle_image_change(event, setSelectedImage);
   };
 
   useEffect(() => {
@@ -166,12 +118,18 @@ export default function Signup() {
             )}
             <br />
           </div>
-          <button
-            className="w-full bg-blue-500 border-blue-500 text-white font-bold py-[7px] px-4 rounded hover:bg-transparent border-[1px] transition-all hover:border-gray-400 focus:outline-none "
-            type="submit"
-          >
-            Sign Up
-          </button>
+          {!props.load ? (
+            <button
+              className="w-full bg-blue-500 border-blue-500 text-white font-bold py-[7px] px-4 rounded hover:bg-transparent border-[1px] transition-all hover:border-gray-400 focus:outline-none "
+              type="submit"
+            >
+              Sign Up
+            </button>
+          ) : (
+            <div className="ml-10 mb-5 -mt-10">
+              <Loader />
+            </div>
+          )}
         </form>
         <div className="mt-4 text-center">
           <span className="text-gray-400">Already have an account?</span>

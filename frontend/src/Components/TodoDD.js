@@ -4,93 +4,38 @@ import { UPDATE_TASK_COMPLETION, REMOVE_TASK } from "../GraphQl/Mutation";
 import { useMutation, useQuery } from "@apollo/client";
 import { FaGripVertical } from "react-icons/fa";
 import { toast } from "react-toastify";
-export default function TodoDD() {
+import Loader from "./Loader";
+import {
+  REMOVEUSERTASK,
+  handle_Item_Click,
+  show_Task_Details,
+} from "../Services";
+export default function TodoDD(props) {
   const [isOpen, setIsOpen] = useState(false);
   const [box, setBox] = useState(false);
   const [taskindex, setTaskindex] = useState(0);
   const [UPDATE_TASK] = useMutation(UPDATE_TASK_COMPLETION);
   const [REMOVETASK] = useMutation(REMOVE_TASK);
-
   const userData = JSON.parse(localStorage.getItem("userData"));
   const email = userData ? userData.email : "";
   const { loading, error, data } = useQuery(GETALLTASKS, {
     variables: { id: email },
   });
-
   const toggleDropdown = () => {
     if (isOpen) {
       setBox(false);
     }
     setIsOpen(!isOpen);
   };
-
   const showTaskDetails = (index) => {
-    setBox(true);
-    setTaskindex(index);
-    setTimeout(() => {
-      const detailsElement = document.getElementById("details");
-      detailsElement.innerHTML =
-        "Task : &nbsp;&nbsp;" +
-        data.taskUser.tasks[index].task +
-        "<br>" +
-        "Creation Time : &nbsp;&nbsp;" +
-        data.taskUser.tasks[index].creationTime +
-        "<br>" +
-        "Completed : &nbsp;&nbsp;" +
-        data.taskUser.tasks[index].completed +
-        "<br>" +
-        "Completed Time : &nbsp;&nbsp;" +
-        (data.taskUser.tasks[index].completionTime === null
-          ? ""
-          : data.taskUser.tasks[index].completionTime);
-    }, 0);
+    show_Task_Details(setBox, setTaskindex, index, data);
   };
-
   const handleItemClick = (index) => {
-    setBox(false);
-    UPDATE_TASK({
-      variables: {
-        _id: JSON.parse(localStorage.getItem("userData")).email,
-        taskIndex: index,
-        completionTime: new Date().toISOString(),
-      },
-      refetchQueries: [
-        {
-          query: GETALLTASKS,
-          variables: {
-            id: JSON.parse(localStorage.getItem("userData")).email,
-          },
-        },
-      ],
-    })
-      .then((response) => {})
-      .catch((error) => {});
+    handle_Item_Click(setBox, toast, UPDATE_TASK, index);
   };
-
   const removeusertask = () => {
-    setBox(false);
-    REMOVETASK({
-      variables: {
-        _id: JSON.parse(localStorage.getItem("userData")).email,
-        taskIndex: taskindex,
-      },
-      refetchQueries: [
-        {
-          query: GETALLTASKS,
-          variables: {
-            id: JSON.parse(localStorage.getItem("userData")).email,
-          },
-        },
-      ],
-    })
-      .then((response) => {
-        toast.success("Task Deleted", {
-          autoClose: 800,
-        });
-      })
-      .catch((error) => {});
+    REMOVEUSERTASK(props, taskindex, toast, REMOVETASK, setBox);
   };
-
   return (
     <section className="flex w-screen items-center absolute justify-center mt-8">
       <div className="relative  w-80">
@@ -114,12 +59,12 @@ export default function TodoDD() {
           <div className="absolute z-10  top-11 mt-2 w-full transition-all  rounded-lg shadow-lg">
             <ul className="py-2 bg-gray-200 max-h-[58vh] min-h-[58vh] transition-all overflow-y-auto rounded-lg hidescrollbar">
               {loading ? (
-                <li>Loading...</li>
+                <li className="text-center">Loading...</li>
               ) : error ? (
-                <li>Error: {error.message}</li>
+                <li className="text-center">Error: {error.message}</li>
               ) : (
                 data.taskUser.tasks.map((task, index) => (
-                  <React.Fragment key={task.creationTime}>
+                  <React.Fragment key={index}>
                     <li className="pt-1 pb-4 flex items-center justify-center">
                       <div>
                         <span
@@ -162,12 +107,18 @@ export default function TodoDD() {
           <span id="details"></span>
           <br />
           <hr className="w-60 my-4 text-black bg-black  border-gray-500 block m-auto " />
-          <button
-            onClick={() => removeusertask()}
-            className="bg-yellow-500  p-1 mt-2 text-black text-sm rounded-sm block m-auto"
-          >
-            Delete Task
-          </button>
+          {!props.load ? (
+            <button
+              onClick={() => removeusertask()}
+              className="bg-yellow-500  p-1 mt-2 text-black text-sm rounded-sm block m-auto"
+            >
+              Delete Task
+            </button>
+          ) : (
+            <div className="ml-10 mb-5 -mt-10">
+              <Loader />
+            </div>
+          )}
         </div>
       )}
     </section>
