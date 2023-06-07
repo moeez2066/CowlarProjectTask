@@ -20,5 +20,8 @@
     "mongoose": "^6.9.0",
     "morgan": "~1.9.1",
     "netlify-build": "^0.0.1-security"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0"
   }
 }
