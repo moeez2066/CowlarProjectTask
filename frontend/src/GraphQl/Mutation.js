@@ -14,7 +14,6 @@ export const UPDATEUSER = gql`
     }
   }
 `;
-
 export const UPDATE_TASK_COMPLETION = gql`
   mutation updateTaskCompletion($userId: String!, $taskId: Int!) {
     updateTaskCompletion(userId: $userId, taskId: $taskId) {
@@ -22,7 +21,6 @@ export const UPDATE_TASK_COMPLETION = gql`
     }
   }
 `;
-
 export const REMOVE_TASK = gql`
   mutation RemoveTask($userId: String!, $taskId: Int!) {
     removeTask(userId: $userId, taskId: $taskId) {

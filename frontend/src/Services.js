@@ -29,13 +29,13 @@ export function handleAddTask(
     })
       .then((response) => {
         setLoad(false);
-        toast.success("Task added to your todo list ", {
+        toast.success(`Task " ${inputValue} " added to your todo list`, {
           autoClose: 1000,
         });
       })
       .catch((error) => {
         setLoad(false);
-        toast.error("Failed to add task", {
+        toast.error(`Failed to add task  " ${inputValue} " `, {
           autoClose: 1000,
         });
       });
@@ -43,7 +43,14 @@ export function handleAddTask(
   }
 }
 
-export function REMOVEUSERTASK(props, taskindex, toast, REMOVETASK, setBox) {
+export function REMOVEUSERTASK(
+  props,
+  taskindex,
+  toast,
+  REMOVETASK,
+  setBox,
+  taskdata
+) {
   props.setLoad(true);
 
   REMOVETASK({
@@ -63,22 +70,22 @@ export function REMOVEUSERTASK(props, taskindex, toast, REMOVETASK, setBox) {
     .then((response) => {
       setBox(false);
       props.setLoad(false);
-      toast.success("Task deleted from your todo list ", {
+      toast.success(`Task " ${taskdata} " deleted from your todo list `, {
         autoClose: 800,
       });
     })
     .catch((error) => {
       props.setLoad(false);
-      toast.success("Failed to delete task from your todo list ", {
-        autoClose: 800,
-      });
+      toast.error(
+        `Failed to delete task " ${taskdata} " from your todo list `,
+        {
+          autoClose: 800,
+        }
+      );
     });
 }
-export function handle_Item_Click(setBox, toast, UPDATE_TASK, index) {
+export function handle_Item_Click(setBox, toast, UPDATE_TASK, index, taskdata) {
   setBox(false);
-  toast.info("Marking test in progress...", {
-    autoClose: 1000,
-  });
   UPDATE_TASK({
     variables: {
       userId: JSON.parse(localStorage.getItem("userData")).email,
@@ -94,12 +101,12 @@ export function handle_Item_Click(setBox, toast, UPDATE_TASK, index) {
     ],
   })
     .then((response) => {
-      toast.success("Task marked as completed", {
+      toast.success(`Task " ${taskdata} " marked as completed`, {
         autoClose: 1000,
       });
     })
     .catch((error) => {
-      toast.error("Failed to mark task as completed", {
+      toast.error(`Failed to mark task " ${taskdata} " as completed`, {
         autoClose: 1000,
       });
     });
@@ -177,15 +184,17 @@ export function _ADD_(event, props, toast, Adduser, setUserData) {
     password: event.target.password.value,
   });
   setTimeout(() => {
-    Adduser().catch((error) => {
-      if (error.message === "User already exists") {
-        toast.error("Email Already Exists ");
-        props.setLoad(false);
-      } else {
-        toast.error("Sign up failed !!");
-        props.setLoad(false);
-      }
-    });
+    Adduser()
+      .then((data) => {})
+      .catch((error) => {
+        if (error.message === "User already exists") {
+          toast.error("Email Already Exists ");
+          props.setLoad(false);
+        } else {
+          toast.error("Sign up failed !!");
+          props.setLoad(false);
+        }
+      });
   }, 0);
   props.setLoad(false);
 }

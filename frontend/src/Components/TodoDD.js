@@ -1,40 +1,43 @@
 import React, { useState } from "react";
-import { GETALLTASKS } from "../GraphQl/Queries";
-import { UPDATE_TASK_COMPLETION, REMOVE_TASK } from "../GraphQl/Mutation";
-import { useMutation, useQuery } from "@apollo/client";
 import { FaGripVertical } from "react-icons/fa";
 import { toast } from "react-toastify";
 import Loader from "./Loader";
+import {
+  useUpdateTaskCompletion,
+  useRemoveTask,
+  useGetAllTasks,
+} from "../useApi";
 import {
   REMOVEUSERTASK,
   handle_Item_Click,
   show_Task_Details,
 } from "../Services";
+
 export default function TodoDD(props) {
   const [isOpen, setIsOpen] = useState(false);
   const [box, setBox] = useState(false);
   const [taskindex, setTaskindex] = useState(0);
-  const [UPDATE_TASK] = useMutation(UPDATE_TASK_COMPLETION);
-  const [REMOVETASK] = useMutation(REMOVE_TASK);
-  const userData = JSON.parse(localStorage.getItem("userData"));
-  const email = userData ? userData.email : "";
-  const { loading, error, data } = useQuery(GETALLTASKS, {
-    variables: { id: email },
-  });
+  const [taskdata, setTaskdata] = useState("");
+  const [UPDATE_TASK] = useUpdateTaskCompletion();
+  const [REMOVETASK] = useRemoveTask();
+  const { loading, error, data } = useGetAllTasks();
   const toggleDropdown = () => {
     if (isOpen) {
       setBox(false);
     }
     setIsOpen(!isOpen);
   };
-  const showTaskDetails = (index) => {
+  const showTaskDetails = (index, task) => {
+    setTaskdata(task.task);
     show_Task_Details(setBox, setTaskindex, index, data);
   };
-  const handleItemClick = (index) => {
-    handle_Item_Click(setBox, toast, UPDATE_TASK, index);
+  const handleItemClick = (index, task) => {
+    setTimeout(() => {
+      handle_Item_Click(setBox, toast, UPDATE_TASK, index, task.task);
+    }, 0);
   };
   const removeusertask = () => {
-    REMOVEUSERTASK(props, taskindex, toast, REMOVETASK, setBox);
+    REMOVEUSERTASK(props, taskindex, toast, REMOVETASK, setBox, taskdata);
   };
   return (
     <section className="flex w-screen items-center absolute justify-center mt-8">
@@ -73,7 +76,7 @@ export default function TodoDD(props) {
                               ? "bg-black text-white"
                               : "bg-gray-200 border border-black py-[0.10rem] px-[0.51rem]"
                           }`}
-                          onClick={() => handleItemClick(index)}
+                          onClick={() => handleItemClick(index, task)}
                         >
                           {task.completed ? "\u2713" : ""}
                         </span>
@@ -82,7 +85,7 @@ export default function TodoDD(props) {
                       </div>
                       <span className="ml-auto  mr-3 cursor-pointer ">
                         <FaGripVertical
-                          onClick={() => showTaskDetails(index)}
+                          onClick={() => showTaskDetails(index, task)}
                           className="text-gray-500 hover:text-yellow-500"
                         />
                       </span>

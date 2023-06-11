@@ -8,7 +8,6 @@ export default function Logout() {
   };
   const userData = JSON.parse(localStorage.getItem("userData"));
   const email = userData ? userData.email : "";
-
   return (
     <>
       <div className="absolute  top-2 left-5 text-white">

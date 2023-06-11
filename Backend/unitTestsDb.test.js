@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { User } = require("./models/userSchema");
 const { Task } = require("./models/userSchema");
 
-describe("User Creation", () => {
+describe("Tests", () => {
   beforeAll(async () => {
     mongoose
       .connect("mongodb://0.0.0.0:27017/test-db", { useNewUrlParser: true })
@@ -117,15 +117,15 @@ describe("User Creation", () => {
       _id: new mongoose.Types.ObjectId(),
       task: "Task 1",
       completed: false,
-      creationTime: "2023-06-07",
+      creationTime: new Date(),
       completionTime: null,
     });
     const task2 = new Task({
       _id: new mongoose.Types.ObjectId(),
       task: "Task 2",
       completed: true,
-      creationTime: "2023-06-07",
-      completionTime: "2023-06-08",
+      creationTime: new Date(),
+      completionTime: new Date(),
     });
     await Task.insertMany([task1, task2]);
     user.tasks = [task1._id, task2._id];
@@ -153,7 +153,7 @@ describe("User Creation", () => {
       _id: mongoose.Types.ObjectId(),
       task: "New Task",
       completed: false,
-      creationTime: new Date().toISOString(),
+      creationTime: new Date(),
       completionTime: null,
     });
     savedUser.tasks.push(newTask._id);
@@ -173,7 +173,7 @@ describe("User Creation", () => {
       _id: mongoose.Types.ObjectId(),
       task: "New Task",
       completed: false,
-      creationTime: new Date().toISOString(),
+      creationTime: new Date(),
       completionTime: null,
     });
     savedUser.tasks.push(newTask);
@@ -196,7 +196,7 @@ describe("User Creation", () => {
       _id: mongoose.Types.ObjectId(),
       task: "New Task",
       completed: false,
-      creationTime: new Date().toISOString(),
+      creationTime: new Date(),
       completionTime: null,
     });
     const savedTask = await newTask.save();

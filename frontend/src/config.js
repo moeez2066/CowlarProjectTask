@@ -1,5 +1,5 @@
 const config = {
-    graphqlURI: "http://localhost:3000/graphql",
+    graphqlURI: process.env.REACT_APP_GRAPHQL_URL,
   };
   
 module.exports = config;

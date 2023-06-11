@@ -26,24 +26,17 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
-app.use(function (req, res, next) {
-  next(createError(404));
-});
-app.use(function (req, res, next) {
-  next(createError(404));
-});
+
 app.use(function (err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-  res.status(err.status || 500).json({
-    error: err.message,
-  });
+  const statusCode = err.status || 500;
+  const message = err.message || "Internal Server Error";
+
+  res.status(statusCode).json({ error: message });
 });
 
 var mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 mongoose.Promise = require("bluebird");
-mongoose;
 mongoose
   .connect(config.mongodbURL, { useNewUrlParser: true })
   .then(() => console.log("Connection successful"))

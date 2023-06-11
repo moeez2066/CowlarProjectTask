@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useMutation } from "@apollo/client";
-import { ADDUSER } from "../GraphQl/Mutation";
+import { useAddUser } from "../useApi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import Loader from "./Loader";
 import { handle_image_change, _ADD_ } from "../Services";
+
 export default function Signup(props) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
@@ -14,20 +14,13 @@ export default function Signup(props) {
     password: "",
   });
   const [selectedImage, setSelectedImage] = useState(null);
-  const [Adduser, { data }] = useMutation(ADDUSER, {
-    variables: {
-      _id: userData._id,
-      password: userData.password,
-    },
-  });
+  const [Adduser, { data }] = useAddUser(userData);
   const Add = (event) => {
     _ADD_(event, props, toast, Adduser, setUserData);
   };
-
   const handleImageChange = (event) => {
     handle_image_change(event, setSelectedImage);
   };
-
   useEffect(() => {
     if (data) {
       localStorage.setItem(

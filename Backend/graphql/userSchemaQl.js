@@ -7,17 +7,36 @@ const {
   GraphQLBoolean,
   GraphQLInputObjectType,
   GraphQLInt,
+  GraphQLScalarType,
+  Kind,
 } = require("graphql");
 const { User, Task } = require("../models/userSchema");
 const mongoose = require("mongoose");
+const DateScalarType = new GraphQLScalarType({
+  name: "Date",
+  description: "Date custom scalar type",
+  parseValue(value) {
+    return new Date(value);
+  },
+  serialize(value) {
+    return value.toLocaleDateString() + "  -  " + value.toLocaleTimeString();
+  },
+  parseLiteral(ast) {
+    if (ast.kind === Kind.STRING) {
+      return new Date(ast.value);
+    }
+    return null;
+  },
+});
+
 const taskType = new GraphQLObjectType({
   name: "Task",
   fields: () => ({
     _id: { type: GraphQLString },
     task: { type: GraphQLString },
     completed: { type: GraphQLBoolean },
-    creationTime: { type: GraphQLString },
-    completionTime: { type: GraphQLString },
+    creationTime: { type: DateScalarType },
+    completionTime: { type: DateScalarType },
   }),
 });
 
@@ -26,8 +45,8 @@ const taskInputType = new GraphQLInputObjectType({
   fields: () => ({
     task: { type: GraphQLString },
     completed: { type: GraphQLBoolean },
-    creationTime: { type: GraphQLString },
-    completionTime: { type: GraphQLString },
+    creationTime: { type: DateScalarType },
+    completionTime: { type: DateScalarType },
   }),
 });
 
@@ -109,10 +128,7 @@ const mutation = new GraphQLObjectType({
             _id: new mongoose.Types.ObjectId(),
             task: task.task,
             completed: false,
-            creationTime:
-              new Date().toLocaleDateString() +
-              " " +
-              new Date().toLocaleTimeString(),
+            creationTime: new Date(),
             completionTime: task.completionTime,
           });
 
@@ -149,10 +165,7 @@ const mutation = new GraphQLObjectType({
             taskToUpdateId,
             {
               completed: true,
-              completionTime:
-                new Date().toLocaleDateString() +
-                " " +
-                new Date().toLocaleTimeString(),
+              completionTime: new Date(),
             },
             { new: true }
           );

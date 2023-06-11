@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import Loader from "./Loader";
-import { useMutation } from "@apollo/client";
-import { UPDATEUSER } from "../GraphQl/Mutation";
+import { useUpdateUser } from "../useApi";
 import { handleAddTask } from "../Services";
 
 export default function AddTask(props) {
   const [inputValue, setInputValue] = useState("");
   const [isInputSelected, setIsInputSelected] = useState(false);
-  const [updateUser] = useMutation(UPDATEUSER);
+  const [updateUser] = useUpdateUser();
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
@@ -32,41 +31,50 @@ export default function AddTask(props) {
     }
   };
   const handleAddTaskClick = () => {
+    setIsInputSelected(false);
     handleAddTask(inputValue, props.setLoad, updateUser, toast, setInputValue);
   };
 
   return (
-    <section className="flex w-full -z-[2x] absolute bottom-28 items-center justify-center">
-      <div className="relative mt-4 w-60">
-        <label
-          className={`absolute left-2 transition-all ${
-            isInputSelected
-              ? "-top-5 text-sm text-gray-300 "
-              : "top-2 text-base text-gray-500 font-semibold"
-          }  pointer-events-none`}
-        >
-          ENTER TASK
-        </label>
-        <input
-          className="w-full -z-10 px-4 py-2 rounded border border-gray-300 focus:outline-none focus:border-indigo-500"
-          type="text"
-          placeholder=""
-          value={inputValue}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          onKeyDown={handleKeyPress}
-        />
-        {!props.load ? (
-          <button
-            onClick={handleAddTaskClick}
-            className="bg-yellow-500 p-2 mt-4 -mb-3 block m-auto text-black text-sm rounded-sm font-semibold"
+    <section className="flex w-full  h-min fixed bottom-0 items-center justify-center mb-20 ">
+      <div className="relative w-80 bg-white rounded shadow-lg">
+        <h2 className="px-4 py-2 text-lg font-semibold text-gray-800">
+          Add a Task
+        </h2>
+        <div className="px-4 py-2 ">
+          <label
+            className={`absolute left-4 top-4 transition-all ${
+              isInputSelected
+                ? "-top-5 text-xs text-gray-400"
+                : "top-4 text-sm text-gray-600 font-semibold"
+            } pointer-events-none bg-white px-1`}
           >
-            Add Task
-          </button>
-        ) : (
-          <Loader />
-        )}
+            Task Description
+          </label>
+          <input
+            className="w-full py-2 pl-2 pr-8 mt-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            type="text"
+            placeholder="Enter task description"
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onKeyDown={handleKeyPress}
+            aria-label="Task Description"
+          />
+        </div>
+        <div className="flex justify-end px-4 py-2">
+          {!props.load ? (
+            <button
+              onClick={handleAddTaskClick}
+              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-600"
+            >
+              Add Task
+            </button>
+          ) : (
+            <Loader />
+          )}
+        </div>
       </div>
     </section>
   );

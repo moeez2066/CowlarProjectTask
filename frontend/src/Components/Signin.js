@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@apollo/client";
-import { LOADONEUSER } from "../GraphQl/Queries";
+import { useLoadOneUser } from "../useApi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
@@ -13,10 +12,7 @@ export default function Signin() {
     password: "",
   });
   const [skip, setSkip] = useState(true);
-  const { data } = useQuery(LOADONEUSER, {
-    variables: { id: userData._id, password: userData.password },
-    skip: skip,
-  });
+  const { data } = useLoadOneUser(userData, skip);
   const View = (event) => {
     event.preventDefault();
     setSkip(false);
@@ -25,7 +21,6 @@ export default function Signin() {
       password: event.target.password.value,
     });
   };
-
   useEffect(() => {
     if (data) {
       if (data.Oneuser === null) {
